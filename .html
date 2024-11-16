@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>人狼役職配布</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 20px;
+      background-color: #f4f4f9;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+    label {
+      font-size: 16px;
+    }
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+    li {
+      padding: 10px;
+      background-color: #e2e2e2;
+      margin: 10px 0;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 18px;
+    }
+    .player-name, .role-selection, .add-role {
+      margin-bottom: 10px;
+    }
+    .role-entry {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .remove-role {
+      background-color: #b0b0b0;
+      color: white;
+      padding: 5px;
+      font-size: 12px;
+      cursor: pointer;
+      border: none;
+      border-radius: 4px;
+      width: 40px;
+      height: 25px;
+      margin-left: 10px;
+    }
+    .remove-role:hover {
+      background-color: #808080;
+    }
+    .death-checkbox {
+      margin-left: 10px;
+      width: 30px;
+      height: 30px;
+      margin-right: 10px;
+    }
+    .dead {
+      text-decoration: line-through;
+      color: gray;
+    }
+    .death-text {
+      color: red;
+      margin-left: 10px;
+      font-weight: bold;
+    }
+    .vote-count {
+      margin-left: 15px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .reset-vote-button, .vote-button {
+      padding: 5px 8px;
+      background-color: #b0b0b0;
+      color: white;
+      font-size: 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .vote-button.decrease {
+      background-color: #f44336;
+    }
+    .reset-vote-button {
+      background-color: #8e8e8e;
+    }
+    .button-container {
+      display: flex;
+      align-items: center;
+    }
+    .button-container button {
+      margin-left: 5px;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>人狼GM補助サイト</h1>
+    
+    <label for="playerCount">プレイヤー数を入力：</label>
+    <input type="number" id="playerCount" placeholder="プレイヤー数" min="4" max="20">
+
+    <button onclick="generateRoleInputs()">役職の入力</button>
+
+    <div id="roleInputs"></div>
+
+    <h3>追加された役職:</h3>
+    <ul id="addedRolesList"></ul>
+
+    <button onclick="generateNameInputs()">参加者一覧（おしてね）</button>
+
+    <div id="nameInputs"></div>
+
+    <button onclick="distributeRoles()">役職配布</button>
+
+    <h2>結果:</h2>
+    <ul id="resultList"></ul>
+  </div>
+
+  <script>
+    // 役職の種類と数を設定できるフォームを生成
+    function generateRoleInputs() {
+      const roleInputsDiv = document.getElementById("roleInputs");
+      roleInputsDiv.innerHTML = ""; // フィールドをリセット
+
+      const roleContainer = document.createElement("div");
+      roleContainer.classList.add("add-role");
+
+      // 役職の追加フォーム
+      roleContainer.innerHTML = `
+        <label for="newRole">新しい役職名:</label>
+        <input type="text" id="newRole" placeholder="役職名を入力" required>
+        <label for="roleCount">人数:</label>
+        <input type="number" id="roleCount" value="0" min="1" required>
+        <button onclick="addRole()">役職を追加</button>
+      `;
+      roleInputsDiv.appendChild(roleContainer);
+    }
+
+    // 新しい役職を追加
+    function addRole() {
+      const roleName = document.getElementById("newRole").value.trim();
+      const roleCount = parseInt(document.getElementById("roleCount").value);
+      const playerCount = parseInt(document.getElementById("playerCount").value);
+
+      if (!roleName || roleCount <= 0) {
+        alert("役職名と人数を正しく入力してください。");
+        return;
+      }
+
+      // 現在の役職の人数合計
+      let totalRoleCount = 0;
+      if (window.roles) {
+        totalRoleCount = window.roles.reduce((sum, roleData) => sum + roleData.count, 0);
+      }
+
+      // 残り人数を計算
+      const remainingPlayers = playerCount - totalRoleCount;
+
+      if (roleCount > remainingPlayers) {
+        alert(`残り人数は${remainingPlayers}人です。`);
+        return;
+      }
+
+      const roleData = { name: roleName, count: roleCount };
+      if (!window.roles) {
+        window.roles = [];
+      }
+      window.roles.push(roleData);
+
+      // 役職のリストを表示
+      displayAddedRoles();
+
+      // フォームのリセット
+      document.getElementById("newRole").value = '';
+      document.getElementById("roleCount").value = 1;
+    }
+
+    // 追加された役職のリストを表示
+    function displayAddedRoles() {
+      const addedRolesList = document.getElementById("addedRolesList");
+      addedRolesList.innerHTML = ""; // リストをリセット
+
+      if (window.roles) {
+        window.roles.forEach((role, index) => {
+          const li = document.createElement("li");
+          li.textContent = `${role.name} - ${role.count}人`;
+
+          // 削除ボタンを追加
+          const removeButton = document.createElement("button");
+          removeButton.textContent = "削除";
+          removeButton.classList.add("remove-role");
+          removeButton.addEventListener("click", function() {
+            removeRole(index);
+          });
+
+          li.appendChild(removeButton);
+          addedRolesList.appendChild(li);
+        });
+      }
+    }
+
+    // 役職を削除
+    function removeRole(index) {
+      if (window.roles) {
+        // 役職を削除
+        window.roles.splice(index, 1);
+        // 役職リストを再表示
+        displayAddedRoles();
+      }
+    }
+
+    // プレイヤー数に応じた名前入力フィールドを生成
+    function generateNameInputs() {
+      const playerCount = document.getElementById("playerCount").value;
+      const nameInputsDiv = document.getElementById("nameInputs");
+      nameInputsDiv.innerHTML = ""; // フィールドをリセット
+
+      if (playerCount < 4 || playerCount > 20) {
+        alert("プレイヤー数は4から20人の間で入力してください。");
+        return;
+      }
+
+      for (let i = 0; i < playerCount; i++) {
+        const inputField = document.createElement("div");
+        inputField.classList.add("player-name");
+        inputField.innerHTML = `<label for="name${i}">プレイヤー${i + 1}の名前:</label>
+                               <input type="text" id="name${i}" placeholder="名前を入力" required>`;
+        nameInputsDiv.appendChild(inputField);
+      }
+    }
+
+    // 役職をランダムに配布
+    function distributeRoles() {
+      const playerCount = parseInt(document.getElementById("playerCount").value);
+      const roles = [];
+      const playerNames = [];
+
+      // プレイヤー名の取得
+      for (let i = 0; i < playerCount; i++) {
+        const playerName = document.getElementById(`name${i}`).value.trim();
+        if (playerName === "") {
+          alert("プレイヤー名を全て入力してください。");
+          return;
+        }
+        playerNames.push(playerName);
+      }
+
+      // 役職リストの作成
+      if (window.roles) {
+        window.roles.forEach(roleData => {
+          for (let i = 0; i < roleData.count; i++) {
+            roles.push(roleData.name);
+          }
+        });
+      }
+
+      // 役職をランダムにシャッフル
+      const shuffledRoles = randomizeRoles(roles);
+
+      // 結果の表示
+      displayResults(playerNames, shuffledRoles);
+    }
+
+    // ランダムに役職をシャッフル
+    function randomizeRoles(roles) {
+      const shuffledRoles = roles.slice();
+      for (let i = shuffledRoles.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledRoles[i], shuffledRoles[j]] = [shuffledRoles[j], shuffledRoles[i]];
+      }
+      return shuffledRoles;
+    }
+
+    // 結果を表示
+    function displayResults(playerNames, roleDistribution) {
+      const resultList = document.getElementById("resultList");
+      resultList.innerHTML = ""; // 結果リストをクリア
+
+      playerNames.forEach((playerName, index) => {
+        const li = document.createElement("li");
+        const deathCheckbox = document.createElement("input");
+        deathCheckbox.type = "checkbox";
+        deathCheckbox.classList.add("death-checkbox");
+        deathCheckbox.addEventListener("change", function() {
+          handleDeathCheckboxChange(deathCheckbox, li, playerName);
+        });
+
+        const label = document.createElement("label");
+        label.innerHTML = `${playerName}: <strong>${roleDistribution[index]}</strong>`;
+
+        // 投票カウント
+        const voteCount = document.createElement("span");
+        voteCount.classList.add("vote-count");
+        voteCount.textContent = "投票数: 0";
+
+        // 投票数増減ボタンとリセットボタン
+        const buttonContainer = document.createElement("div");
+        buttonContainer.classList.add("button-container");
+
+        const increaseVoteButton = document.createElement("button");
+        increaseVoteButton.textContent = "+";
+        increaseVoteButton.classList.add("vote-button");
+        increaseVoteButton.addEventListener("click", function() {
+          changeVoteCount(voteCount, 1);
+        });
+
+        const decreaseVoteButton = document.createElement("button");
+        decreaseVoteButton.textContent = "-";
+        decreaseVoteButton.classList.add("vote-button", "decrease");
+        decreaseVoteButton.addEventListener("click", function() {
+          changeVoteCount(voteCount, -1);
+        });
+
+        const resetVoteButton = document.createElement("button");
+        resetVoteButton.textContent = "リセット";
+        resetVoteButton.classList.add("reset-vote-button");
+        resetVoteButton.addEventListener("click", function() {
+          resetVoteCount(voteCount);
+        });
+
+        buttonContainer.appendChild(increaseVoteButton);
+        buttonContainer.appendChild(decreaseVoteButton);
+        buttonContainer.appendChild(resetVoteButton);
+
+        li.appendChild(label);
+        li.appendChild(deathCheckbox);
+        li.appendChild(voteCount);
+        li.appendChild(buttonContainer);
+
+        resultList.appendChild(li);
+      });
+    }
+
+    // 投票数を増減
+    function changeVoteCount(voteCount, delta) {
+      let currentVote = parseInt(voteCount.textContent.replace("投票数: ", ""));
+      currentVote += delta;
+      if (currentVote < 0) currentVote = 0;
+      voteCount.textContent = `投票数: ${currentVote}`;
+    }
+
+    // 投票カウントをリセット
+    function resetVoteCount(voteCount) {
+      voteCount.textContent = "投票数: 0";
+    }
+
+    // 死亡チェックボックスが変更されたときの処理
+    function handleDeathCheckboxChange(checkbox, li, playerName) {
+      const label = li.querySelector("label");
+      if (checkbox.checked) {
+        label.classList.add("dead"); // 名前に棒線を引く
+        const deathText = document.createElement("span");
+        deathText.classList.add("death-text");
+        deathText.textContent = "死亡";
+        li.appendChild(deathText);
+      } else {
+        label.classList.remove("dead"); // 棒線を消す
+        const deathText = li.querySelector(".death-text");
+        if (deathText) {
+          deathText.remove(); // 死亡文字を削除
+        }
+      }
+    }
+  </script>
+</body>
+</html>

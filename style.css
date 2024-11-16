@@ -1,0 +1,106 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  padding: 20px;
+  background-color: #f4f4f9;
+}
+.container {
+  max-width: 600px;
+  margin: auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+h1 {
+  text-align: center;
+}
+input, button {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 16px;
+}
+label {
+  font-size: 16px;
+}
+ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+li {
+  padding: 10px;
+  background-color: #e2e2e2;
+  margin: 10px 0;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 18px;
+}
+.player-name, .role-selection, .add-role {
+  margin-bottom: 10px;
+}
+.role-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.remove-role {
+  background-color: #b0b0b0;
+  color: white;
+  padding: 5px;
+  font-size: 12px;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  width: 40px;
+  height: 25px;
+  margin-left: 10px;
+}
+.remove-role:hover {
+  background-color: #808080;
+}
+.death-checkbox {
+  margin-left: 10px;
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;
+}
+.dead {
+  text-decoration: line-through;
+  color: gray;
+}
+.death-text {
+  color: red;
+  margin-left: 10px;
+  font-weight: bold;
+}
+.vote-count {
+  margin-left: 15px;
+  font-weight: bold;
+  font-size: 16px;
+}
+.reset-vote-button, .vote-button {
+  padding: 5px 8px;
+  background-color: #b0b0b0;
+  color: white;
+  font-size: 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.vote-button.decrease {
+  background-color: #f44336;
+}
+.reset-vote-button {
+  background-color: #8e8e8e;
+}
+.button-container {
+  display: flex;
+  align-items: center;
+}
+.button-container button {
+  margin-left: 5px;
+  font-size: 10px;
+}

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>人狼役職配布</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    <h1>人狼役職配布</h1>
+    
+    <label for="playerCount">プレイヤー数を入力：</label>
+    <input type="number" id="playerCount" placeholder="プレイヤー数" min="4" max="20">
+
+    <button id="roleButton">役職の設定</button> <!-- ボタンのID追加 -->
+
+    <div id="roleInputs"></div>
+
+    <h3>追加された役職:</h3>
+    <ul id="addedRolesList"></ul>
+
+    <button onclick="generateNameInputs()">名前入力フィールドを生成</button>
+
+    <div id="nameInputs"></div>
+
+    <button onclick="distributeRoles()">役職配布</button>
+
+    <h2>結果:</h2>
+    <ul id="resultList"></ul>
+  </div>
+
+  <script src="script.js"></script> <!-- script.jsはここで読み込む -->
+</body>
+</html>
